@@ -27,39 +27,43 @@
   --hero-a: rgba(79, 184, 178, 0.36);
   --hero-b: rgba(47, 106, 74, 0.2);
 
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.141 0.005 285.823);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.141 0.005 285.823);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.141 0.005 285.823);
-  --primary: oklch(0.21 0.006 285.885);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.967 0.001 286.375);
-  --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: oklch(0.967 0.001 286.375);
-  --accent-foreground: oklch(0.21 0.006 285.885);
+  /* shadcn tokens, mapped onto the island palette above so every generated
+     component themes itself. Values are literal rather than var() references:
+     .dark redefines the island vars on the same element, which would make a
+     var() indirection resolve to the wrong palette. */
+  --background: #e7f3ec;
+  --foreground: #173a40;
+  --card: rgba(255, 255, 255, 0.9);
+  --card-foreground: #173a40;
+  --popover: #ffffff;
+  --popover-foreground: #173a40;
+  --primary: #328f97;
+  --primary-foreground: #f3faf5;
+  --secondary: #e7f0e8;
+  --secondary-foreground: #173a40;
+  --muted: #edf5ee;
+  --muted-foreground: #416166;
+  --accent: #dcf0ee;
+  --accent-foreground: #173a40;
   --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.871 0.006 286.286);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: rgba(23, 58, 64, 0.14);
+  --input: rgba(23, 58, 64, 0.2);
+  --ring: #328f97;
+  --chart-1: #328f97;
+  --chart-2: #2f6a4a;
+  --chart-3: #b4763a;
+  --chart-4: #6a5aa6;
+  --chart-5: #c2555f;
   --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-primary: oklch(0.21 0.006 285.885);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.21 0.006 285.885);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.871 0.006 286.286);
+  --sidebar: rgba(255, 255, 255, 0.9);
+  --sidebar-foreground: #173a40;
+  --sidebar-primary: #328f97;
+  --sidebar-primary-foreground: #f3faf5;
+  --sidebar-accent: #dcf0ee;
+  --sidebar-accent-foreground: #173a40;
+  --sidebar-border: rgba(23, 58, 64, 0.14);
+  --sidebar-ring: #328f97;
 }
 
 .dark {
@@ -83,42 +87,43 @@
   --hero-a: rgba(96, 215, 207, 0.18);
   --hero-b: rgba(110, 200, 154, 0.12);
 
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.141 0.005 285.823);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.141 0.005 285.823);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.985 0 0);
-  --primary-foreground: oklch(0.21 0.006 285.885);
-  --secondary: oklch(0.274 0.006 286.033);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
-  --border: oklch(0.274 0.006 286.033);
-  --input: oklch(0.274 0.006 286.033);
-  --ring: oklch(0.442 0.017 285.786);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.274 0.006 286.033);
-  --sidebar-ring: oklch(0.442 0.017 285.786);
+  --background: #0a1418;
+  --foreground: #d7ece8;
+  --card: rgba(15, 27, 31, 0.92);
+  --card-foreground: #d7ece8;
+  --popover: #101d22;
+  --popover-foreground: #d7ece8;
+  --primary: #8de5db;
+  --primary-foreground: #062126;
+  --secondary: #16272c;
+  --secondary-foreground: #d7ece8;
+  --muted: #16272c;
+  --muted-foreground: #afcdc8;
+  --accent: rgba(96, 215, 207, 0.16);
+  --accent-foreground: #d7ece8;
+  --destructive: oklch(0.704 0.191 22.216);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: rgba(141, 229, 219, 0.18);
+  --input: rgba(141, 229, 219, 0.24);
+  --ring: #60d7cf;
+  --chart-1: #60d7cf;
+  --chart-2: #6ec89a;
+  --chart-3: #e0a45e;
+  --chart-4: #a495e6;
+  --chart-5: #ef8b93;
+  --sidebar: rgba(15, 27, 31, 0.92);
+  --sidebar-foreground: #d7ece8;
+  --sidebar-primary: #8de5db;
+  --sidebar-primary-foreground: #062126;
+  --sidebar-accent: rgba(96, 215, 207, 0.16);
+  --sidebar-accent-foreground: #d7ece8;
+  --sidebar-border: rgba(141, 229, 219, 0.18);
+  --sidebar-ring: #60d7cf;
 }
 
 @theme inline {
   --font-sans: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Fraunces', Georgia, serif;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -165,10 +170,12 @@ body,
 
 body {
   margin: 0;
-  color: var(--sea-ink);
+  color: var(--foreground);
   font-family: var(--font-sans);
-  background-color: var(--bg-base);
-  background:
+  background-color: var(--background);
+  /* background-image, not the `background` shorthand: the shorthand resets
+     background-color to transparent, which is why --background had no effect. */
+  background-image:
     radial-gradient(1100px 620px at -8% -10%, var(--hero-a), transparent 58%),
     radial-gradient(1050px 620px at 112% -12%, var(--hero-b), transparent 62%),
     radial-gradient(720px 380px at 50% 115%, rgba(79, 184, 178, 0.1), transparent 68%),
@@ -336,12 +343,21 @@ a {
   background: color-mix(in oklab, var(--header-bg) 84%, transparent 16%);
 }
 
+/* Dense data surfaces (the DTR month grid) opt out of the translucent card.
+   A gradient showing through 31 rows of time inputs hurts legibility, and
+   backdrop-filter over that many rows is a real scroll cost. */
+.surface-dense {
+  --card: #ffffff;
+  --sidebar: #ffffff;
+}
+
+.dark .surface-dense {
+  --card: #101d22;
+  --sidebar: #101d22;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
-  }
-  body {
-    background-color: var(--background);
-    color: var(--foreground);
   }
 }
