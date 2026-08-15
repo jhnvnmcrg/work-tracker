@@ -356,6 +356,111 @@ async function saveDays(
 	return { saved: saved.map((r: TimeRecordRow) => r.workDate), skippedLocked };
 }
 
+/**
+ * Recomputes stored rows for specific dates against current context.
+ *
+ * Called after leave is filed or cancelled, and after a holiday changes: those
+ * events alter what a day means without the punches changing, and the stored
+ * derived values have to follow. Only dates that already have a record are
+ * touched, so this never invents attendance.
+ */
+export async function recomputeDates(
+	userId: string,
+	dates: string[],
+): Promise<string[]> {
+	if (dates.length === 0) return [];
+	const sorted = [...dates].sort();
+	const today = todayInManila();
+	const ctx = await loadMonthContext(
+		userId,
+		assertIsoDate(sorted[0]),
+		assertIsoDate(sorted[sorted.length - 1]),
+	);
+
+	const rows: TimeRecordInsert[] = [];
+	for (const date of sorted) {
+		const existing = ctx.recordByDate.get(date);
+		if (!existing) continue;
+		const leaveRow = ctx.leaveByDate.get(date);
+		rows.push(
+			await toRecordInsert(
+				userId,
+				{
+					workDate: date,
+					amIn: existing.amInMinute,
+					amOut: existing.amOutMinute,
+					pmIn: existing.pmInMinute,
+					pmOut: existing.pmOutMinute,
+					// Leave presence drives the status; removing leave returns the day
+					// to a plain workday rather than leaving a stale "on leave" label.
+					status: leaveRow
+						? leaveRow.portion === "full"
+							? "on_leave"
+							: "half_day_leave"
+						: existing.status === "on_leave" ||
+								existing.status === "half_day_leave"
+							? "present"
+							: existing.status,
+					remarks: existing.remarks,
+					approvedOvertimeMinutes: existing.approvedOvertimeMinutes,
+				},
+				ctx,
+				today,
+			),
+		);
+	}
+
+	const { saved } = await upsertRecords(userId, rows);
+	return saved.map((r: TimeRecordRow) => r.workDate);
+}
+
+/**
+ * Ensures a record exists for each date so leave is visible in the grid, then
+ * recomputes. Used when filing leave over days that were never filled in.
+ */
+export async function materializeLeaveDates(
+	userId: string,
+	dates: string[],
+): Promise<void> {
+	if (dates.length === 0) return;
+	const sorted = [...dates].sort();
+	const today = todayInManila();
+	const ctx = await loadMonthContext(
+		userId,
+		assertIsoDate(sorted[0]),
+		assertIsoDate(sorted[sorted.length - 1]),
+	);
+
+	const rows: TimeRecordInsert[] = [];
+	for (const date of sorted) {
+		const existing = ctx.recordByDate.get(date);
+		const leaveRow = ctx.leaveByDate.get(date);
+		rows.push(
+			await toRecordInsert(
+				userId,
+				{
+					workDate: date,
+					amIn: existing?.amInMinute ?? null,
+					amOut: existing?.amOutMinute ?? null,
+					pmIn: existing?.pmInMinute ?? null,
+					pmOut: existing?.pmOutMinute ?? null,
+					status: leaveRow
+						? leaveRow.portion === "full"
+							? "on_leave"
+							: "half_day_leave"
+						: "present",
+					remarks: existing?.remarks ?? null,
+					approvedOvertimeMinutes: existing?.approvedOvertimeMinutes ?? null,
+				},
+				ctx,
+				today,
+			),
+		);
+	}
+
+	await upsertRecords(userId, rows);
+}
+
 export const upsertDtrDay = protectedFn()
 	.validator(dayInputSchema)
 	.handler(({ data, context }) => saveDays(context.userId, [data]));

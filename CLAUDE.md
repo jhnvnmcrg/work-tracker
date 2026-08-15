@@ -64,7 +64,15 @@ npm test               # vitest run
 npm run db:generate    # after changing src/db/schema/
 npm run db:migrate     # apply — never db:push, this holds financial records
 npm run db:studio
+
+npm run verify:dtr      # DTR write path against a real database
+npm run verify:leave    # leave, balances and holiday interaction
 ```
+
+The `verify:*` scripts exist because unit tests cannot reach SQL-level faults
+(column naming, constraints, cascades). They call the same functions the server
+functions call — `fileLeaveFor`, `cancelLeaveFor` — so they cannot drift from
+the real path. Each writes and then removes a throwaway user.
 
 `@tanstack/ai` ships its own authoritative docs at
 `node_modules/@tanstack/ai/skills/ai-core/` — read those, not the website.
