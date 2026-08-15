@@ -18,6 +18,7 @@
     "test:watch": "vitest",
     "verify:dtr": "tsx scripts/verify-dtr.ts",
     "verify:leave": "tsx scripts/verify-leave.ts",
+    "verify:payroll": "tsx scripts/verify-payroll.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",

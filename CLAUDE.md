@@ -41,6 +41,12 @@ Drizzle · shadcn/ui + Tailwind 4 · `@tanstack/ai` via OpenRouter · Vitest.
   decoupled from `section`.
 - Working-days factor is **313** (covers holidays, not rest days). SSS /
   PhilHealth / Pag-IBIG are all withheld on the **1–16** cutoff.
+- **The factor must agree with the work schedule.** 313 = 365 − 52 Sundays, i.e.
+  a *six-day* week; 261 is the five-day equivalent. Pairing 313 with a Mon–Fri
+  schedule means a flat base earns ₱2,250 per workday while an absence deducts
+  only ₱1,725.24 — absences under-deduct by about a quarter. `computePayslip`
+  raises a non-blocking `factor_schedule_mismatch` warning when the two disagree
+  by more than 5%.
 
 ## Hard architectural constraints
 
@@ -67,6 +73,7 @@ npm run db:studio
 
 npm run verify:dtr      # DTR write path against a real database
 npm run verify:leave    # leave, balances and holiday interaction
+npm run verify:payroll  # statutory tables, payslip persistence, DTR locking
 ```
 
 The `verify:*` scripts exist because unit tests cannot reach SQL-level faults

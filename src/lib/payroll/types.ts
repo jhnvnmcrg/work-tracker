@@ -50,6 +50,57 @@ export type MissingPunchPolicy = (typeof MISSING_PUNCH_POLICIES)[number];
 export const UNACCOUNTED_DAY_POLICIES = ["warn", "absent"] as const;
 export type UnaccountedDayPolicy = (typeof UNACCOUNTED_DAY_POLICIES)[number];
 
+export const LINE_ITEM_SECTIONS = ["earnings", "deductions"] as const;
+export type LineItemSection = (typeof LINE_ITEM_SECTIONS)[number];
+
+export const LINE_ITEM_CATEGORIES = [
+	"base_pay",
+	"overtime",
+	"night_differential",
+	"holiday_premium",
+	"rest_day_premium",
+	"leave_pay",
+	"allowance",
+	"bonus",
+	"adjustment",
+	"late",
+	"undertime",
+	"absence",
+	"sss",
+	"philhealth",
+	"pagibig",
+	"withholding_tax",
+	"loan",
+	"other_deduction",
+] as const;
+export type LineItemCategory = (typeof LINE_ITEM_CATEGORIES)[number];
+
+/** Which cutoff a monthly amount is applied on. */
+export const DEDUCTION_TIMINGS = [
+	"first_cutoff",
+	"second_cutoff",
+	"split_even",
+	"every_cutoff",
+] as const;
+export type DeductionTiming = (typeof DEDUCTION_TIMINGS)[number];
+
+export const STATUTORY_KINDS = [
+	"sss",
+	"philhealth",
+	"pagibig",
+	"withholding_tax",
+] as const;
+export type StatutoryKind = (typeof STATUTORY_KINDS)[number];
+
+export const TAX_PERIOD_TYPES = [
+	"daily",
+	"weekly",
+	"semi_monthly",
+	"monthly",
+	"annual",
+] as const;
+export type TaxPeriodType = (typeof TAX_PERIOD_TYPES)[number];
+
 /** Conditions worth surfacing on a row without refusing the entry. */
 export const DTR_FLAGS = [
 	"missing_punch",

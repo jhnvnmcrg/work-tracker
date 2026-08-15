@@ -2,9 +2,14 @@ import { pgEnum } from "drizzle-orm/pg-core";
 import {
 	ATTENDANCE_STATUSES,
 	DAY_KINDS,
+	DEDUCTION_TIMINGS,
 	LEAVE_DAY_PORTIONS,
+	LINE_ITEM_CATEGORIES,
+	LINE_ITEM_SECTIONS,
 	MISSING_PUNCH_POLICIES,
 	PUNCH_ROUNDING_MODES,
+	STATUTORY_KINDS,
+	TAX_PERIOD_TYPES,
 	UNACCOUNTED_DAY_POLICIES,
 } from "#/lib/payroll/types.ts";
 
@@ -51,39 +56,15 @@ export const payslipType = pgEnum("payslip_type", [
 	"adjustment",
 ]);
 
-export const lineItemSection = pgEnum("line_item_section", [
-	"earnings",
-	"deductions",
-]);
+export const lineItemSection = pgEnum("line_item_section", LINE_ITEM_SECTIONS);
 
-export const lineItemCategory = pgEnum("line_item_category", [
-	"base_pay",
-	"overtime",
-	"night_differential",
-	"holiday_premium",
-	"rest_day_premium",
-	"leave_pay",
-	"allowance",
-	"bonus",
-	"adjustment",
-	"late",
-	"undertime",
-	"absence",
-	"sss",
-	"philhealth",
-	"pagibig",
-	"withholding_tax",
-	"loan",
-	"other_deduction",
-]);
+export const lineItemCategory = pgEnum(
+	"line_item_category",
+	LINE_ITEM_CATEGORIES,
+);
 
 /** Which cutoff a monthly deduction is withheld on. */
-export const deductionTiming = pgEnum("deduction_timing", [
-	"first_cutoff",
-	"second_cutoff",
-	"split_even",
-	"every_cutoff",
-]);
+export const deductionTiming = pgEnum("deduction_timing", DEDUCTION_TIMINGS);
 
 export const holidayKind = pgEnum("holiday_kind", [
 	"regular",
@@ -119,21 +100,10 @@ export const leaveLedgerSource = pgEnum("leave_ledger_source", [
 	"conversion",
 ]);
 
-export const statutoryKind = pgEnum("statutory_kind", [
-	"sss",
-	"philhealth",
-	"pagibig",
-	"withholding_tax",
-]);
+export const statutoryKind = pgEnum("statutory_kind", STATUTORY_KINDS);
 
 /** BIR publishes a separate withholding table per payroll frequency. */
-export const taxPeriodType = pgEnum("tax_period_type", [
-	"daily",
-	"weekly",
-	"semi_monthly",
-	"monthly",
-	"annual",
-]);
+export const taxPeriodType = pgEnum("tax_period_type", TAX_PERIOD_TYPES);
 
 export const auditAction = pgEnum("audit_action", [
 	"create",

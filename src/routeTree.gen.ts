@@ -22,7 +22,9 @@ import { Route as AppDtrIndexRouteImport } from './routes/_app/dtr/index'
 import { Route as AppDtrMonthRouteImport } from './routes/_app/dtr/$month'
 import { Route as AppLeaveIndexRouteImport } from './routes/_app/leave/index'
 import { Route as AppPayslipsIndexRouteImport } from './routes/_app/payslips/index'
+import { Route as AppPayslipsPeriodKeyRouteImport } from './routes/_app/payslips/$periodKey'
 import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
+import { Route as AppSettingsStatutoryRouteImport } from './routes/_app/settings/statutory'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -88,9 +90,19 @@ const AppPayslipsIndexRoute = AppPayslipsIndexRouteImport.update({
   path: '/payslips/',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPayslipsPeriodKeyRoute = AppPayslipsPeriodKeyRouteImport.update({
+  id: '/payslips/$periodKey',
+  path: '/payslips/$periodKey',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSettingsIndexRoute = AppSettingsIndexRouteImport.update({
   id: '/settings/',
   path: '/settings/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSettingsStatutoryRoute = AppSettingsStatutoryRouteImport.update({
+  id: '/settings/statutory',
+  path: '/settings/statutory',
   getParentRoute: () => AppRoute,
 } as any)
 
@@ -104,6 +116,8 @@ export interface FileRoutesByFullPath {
   '/sign-in/': typeof SignInIndexRoute
   '/sign-up/': typeof SignUpIndexRoute
   '/dtr/$month': typeof AppDtrMonthRoute
+  '/payslips/$periodKey': typeof AppPayslipsPeriodKeyRoute
+  '/settings/statutory': typeof AppSettingsStatutoryRoute
   '/dtr/': typeof AppDtrIndexRoute
   '/leave/': typeof AppLeaveIndexRoute
   '/payslips/': typeof AppPayslipsIndexRoute
@@ -119,6 +133,8 @@ export interface FileRoutesByTo {
   '/sign-in': typeof SignInIndexRoute
   '/sign-up': typeof SignUpIndexRoute
   '/dtr/$month': typeof AppDtrMonthRoute
+  '/payslips/$periodKey': typeof AppPayslipsPeriodKeyRoute
+  '/settings/statutory': typeof AppSettingsStatutoryRoute
   '/dtr': typeof AppDtrIndexRoute
   '/leave': typeof AppLeaveIndexRoute
   '/payslips': typeof AppPayslipsIndexRoute
@@ -136,6 +152,8 @@ export interface FileRoutesById {
   '/sign-in/': typeof SignInIndexRoute
   '/sign-up/': typeof SignUpIndexRoute
   '/_app/dtr/$month': typeof AppDtrMonthRoute
+  '/_app/payslips/$periodKey': typeof AppPayslipsPeriodKeyRoute
+  '/_app/settings/statutory': typeof AppSettingsStatutoryRoute
   '/_app/dtr/': typeof AppDtrIndexRoute
   '/_app/leave/': typeof AppLeaveIndexRoute
   '/_app/payslips/': typeof AppPayslipsIndexRoute
@@ -153,6 +171,8 @@ export interface FileRouteTypes {
     | '/sign-in/'
     | '/sign-up/'
     | '/dtr/$month'
+    | '/payslips/$periodKey'
+    | '/settings/statutory'
     | '/dtr/'
     | '/leave/'
     | '/payslips/'
@@ -168,6 +188,8 @@ export interface FileRouteTypes {
     | '/sign-in'
     | '/sign-up'
     | '/dtr/$month'
+    | '/payslips/$periodKey'
+    | '/settings/statutory'
     | '/dtr'
     | '/leave'
     | '/payslips'
@@ -184,6 +206,8 @@ export interface FileRouteTypes {
     | '/sign-in/'
     | '/sign-up/'
     | '/_app/dtr/$month'
+    | '/_app/payslips/$periodKey'
+    | '/_app/settings/statutory'
     | '/_app/dtr/'
     | '/_app/leave/'
     | '/_app/payslips/'
@@ -292,11 +316,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPayslipsIndexRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/payslips/$periodKey': {
+      id: '/_app/payslips/$periodKey'
+      path: '/payslips/$periodKey'
+      fullPath: '/payslips/$periodKey'
+      preLoaderRoute: typeof AppPayslipsPeriodKeyRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/settings/': {
       id: '/_app/settings/'
       path: '/settings'
       fullPath: '/settings/'
       preLoaderRoute: typeof AppSettingsIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/settings/statutory': {
+      id: '/_app/settings/statutory'
+      path: '/settings/statutory'
+      fullPath: '/settings/statutory'
+      preLoaderRoute: typeof AppSettingsStatutoryRouteImport
       parentRoute: typeof AppRoute
     }
   }
@@ -307,6 +345,8 @@ interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppHolidaysRoute: typeof AppHolidaysRoute
   AppDtrMonthRoute: typeof AppDtrMonthRoute
+  AppPayslipsPeriodKeyRoute: typeof AppPayslipsPeriodKeyRoute
+  AppSettingsStatutoryRoute: typeof AppSettingsStatutoryRoute
   AppDtrIndexRoute: typeof AppDtrIndexRoute
   AppLeaveIndexRoute: typeof AppLeaveIndexRoute
   AppPayslipsIndexRoute: typeof AppPayslipsIndexRoute
@@ -318,6 +358,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppHolidaysRoute: AppHolidaysRoute,
   AppDtrMonthRoute: AppDtrMonthRoute,
+  AppPayslipsPeriodKeyRoute: AppPayslipsPeriodKeyRoute,
+  AppSettingsStatutoryRoute: AppSettingsStatutoryRoute,
   AppDtrIndexRoute: AppDtrIndexRoute,
   AppLeaveIndexRoute: AppLeaveIndexRoute,
   AppPayslipsIndexRoute: AppPayslipsIndexRoute,
