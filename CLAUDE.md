@@ -74,6 +74,7 @@ npm run db:studio
 npm run verify:dtr      # DTR write path against a real database
 npm run verify:leave    # leave, balances and holiday interaction
 npm run verify:payroll  # statutory tables, payslip persistence, DTR locking
+npm run verify:dashboard # aggregation and anomaly detection
 ```
 
 The `verify:*` scripts exist because unit tests cannot reach SQL-level faults
