@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ComingSoon } from "#/components/layout/coming-soon.tsx";
+import { AssistantChat } from "#/components/assistant/assistant-chat.tsx";
 import { PageHeader } from "#/components/layout/page-header.tsx";
 
 export const Route = createFileRoute("/_app/assistant")({
+	// No loader: the conversation streams client-side.
 	component: AssistantPage,
 });
 
@@ -11,13 +12,9 @@ function AssistantPage() {
 		<>
 			<PageHeader
 				title="Assistant"
-				description="Ask about your own hours, payslips, and leave."
+				description="Ask about your own hours, payslips and leave."
 			/>
-			<ComingSoon feature="AI assistant" phase="Phase 7">
-				Answers grounded in your records via tool calls — never an invented
-				figure — plus payslip explanations and flagged gaps in your time
-				records. Read-only: it cannot change a punch or a payslip.
-			</ComingSoon>
+			<AssistantChat />
 		</>
 	);
 }

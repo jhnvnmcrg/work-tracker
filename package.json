@@ -20,6 +20,8 @@
     "verify:leave": "tsx scripts/verify-leave.ts",
     "verify:payroll": "tsx scripts/verify-payroll.ts",
     "verify:dashboard": "tsx scripts/verify-dashboard.ts",
+    "setup:readonly": "tsx scripts/setup-readonly-role.ts",
+    "verify:assistant": "tsx scripts/verify-assistant.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",

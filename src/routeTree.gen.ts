@@ -25,6 +25,7 @@ import { Route as AppPayslipsIndexRouteImport } from './routes/_app/payslips/ind
 import { Route as AppPayslipsPeriodKeyRouteImport } from './routes/_app/payslips/$periodKey'
 import { Route as AppSettingsIndexRouteImport } from './routes/_app/settings/index'
 import { Route as AppSettingsStatutoryRouteImport } from './routes/_app/settings/statutory'
+import { Route as ApiAssistantChatRouteImport } from './routes/api/assistant/chat'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -105,6 +106,11 @@ const AppSettingsStatutoryRoute = AppSettingsStatutoryRouteImport.update({
   path: '/settings/statutory',
   getParentRoute: () => AppRoute,
 } as any)
+const ApiAssistantChatRoute = ApiAssistantChatRouteImport.update({
+  id: '/api/assistant/chat',
+  path: '/api/assistant/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -118,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/dtr/$month': typeof AppDtrMonthRoute
   '/payslips/$periodKey': typeof AppPayslipsPeriodKeyRoute
   '/settings/statutory': typeof AppSettingsStatutoryRoute
+  '/api/assistant/chat': typeof ApiAssistantChatRoute
   '/dtr/': typeof AppDtrIndexRoute
   '/leave/': typeof AppLeaveIndexRoute
   '/payslips/': typeof AppPayslipsIndexRoute
@@ -135,6 +142,7 @@ export interface FileRoutesByTo {
   '/dtr/$month': typeof AppDtrMonthRoute
   '/payslips/$periodKey': typeof AppPayslipsPeriodKeyRoute
   '/settings/statutory': typeof AppSettingsStatutoryRoute
+  '/api/assistant/chat': typeof ApiAssistantChatRoute
   '/dtr': typeof AppDtrIndexRoute
   '/leave': typeof AppLeaveIndexRoute
   '/payslips': typeof AppPayslipsIndexRoute
@@ -154,6 +162,7 @@ export interface FileRoutesById {
   '/_app/dtr/$month': typeof AppDtrMonthRoute
   '/_app/payslips/$periodKey': typeof AppPayslipsPeriodKeyRoute
   '/_app/settings/statutory': typeof AppSettingsStatutoryRoute
+  '/api/assistant/chat': typeof ApiAssistantChatRoute
   '/_app/dtr/': typeof AppDtrIndexRoute
   '/_app/leave/': typeof AppLeaveIndexRoute
   '/_app/payslips/': typeof AppPayslipsIndexRoute
@@ -173,6 +182,7 @@ export interface FileRouteTypes {
     | '/dtr/$month'
     | '/payslips/$periodKey'
     | '/settings/statutory'
+    | '/api/assistant/chat'
     | '/dtr/'
     | '/leave/'
     | '/payslips/'
@@ -190,6 +200,7 @@ export interface FileRouteTypes {
     | '/dtr/$month'
     | '/payslips/$periodKey'
     | '/settings/statutory'
+    | '/api/assistant/chat'
     | '/dtr'
     | '/leave'
     | '/payslips'
@@ -208,6 +219,7 @@ export interface FileRouteTypes {
     | '/_app/dtr/$month'
     | '/_app/payslips/$periodKey'
     | '/_app/settings/statutory'
+    | '/api/assistant/chat'
     | '/_app/dtr/'
     | '/_app/leave/'
     | '/_app/payslips/'
@@ -221,6 +233,7 @@ export interface RootRouteChildren {
   SignUpSplatRoute: typeof SignUpSplatRoute
   SignInIndexRoute: typeof SignInIndexRoute
   SignUpIndexRoute: typeof SignUpIndexRoute
+  ApiAssistantChatRoute: typeof ApiAssistantChatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -337,6 +350,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSettingsStatutoryRouteImport
       parentRoute: typeof AppRoute
     }
+    '/api/assistant/chat': {
+      id: '/api/assistant/chat'
+      path: '/api/assistant/chat'
+      fullPath: '/api/assistant/chat'
+      preLoaderRoute: typeof ApiAssistantChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -375,6 +395,7 @@ const rootRouteChildren: RootRouteChildren = {
   SignUpSplatRoute: SignUpSplatRoute,
   SignInIndexRoute: SignInIndexRoute,
   SignUpIndexRoute: SignUpIndexRoute,
+  ApiAssistantChatRoute: ApiAssistantChatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
