@@ -154,6 +154,52 @@ export async function ensureUserBootstrap(
 	});
 }
 
+/**
+ * Rewrites which weekdays are rest days on a schedule.
+ *
+ * Lives here rather than inline in a server module: anything under
+ * `src/server/` is imported by client route files so its server-function
+ * definitions can be called, and a direct `#/db` import there drags drizzle and
+ * the whole schema into the browser bundle.
+ */
+export async function updateScheduleRestDays(
+	userId: string,
+	scheduleId: number,
+	restDays: readonly number[],
+): Promise<void> {
+	const rest = new Set(restDays);
+	const days = await db
+		.select({ id: workScheduleDays.id, weekday: workScheduleDays.weekday })
+		.from(workScheduleDays)
+		.where(
+			and(
+				eq(workScheduleDays.userId, userId),
+				eq(workScheduleDays.scheduleId, scheduleId),
+			),
+		);
+
+	for (const day of days) {
+		const isRestDay = rest.has(day.weekday);
+		await db
+			.update(workScheduleDays)
+			.set({
+				isRestDay,
+				standardWorkMinutes: isRestDay ? 0 : 480,
+				amInMinute: isRestDay ? null : 480,
+				amOutMinute: isRestDay ? null : 720,
+				pmInMinute: isRestDay ? null : 780,
+				pmOutMinute: isRestDay ? null : 1020,
+				breakMinutes: isRestDay ? 0 : 60,
+			})
+			.where(
+				and(
+					eq(workScheduleDays.userId, userId),
+					eq(workScheduleDays.id, day.id),
+				),
+			);
+	}
+}
+
 /* -------------------------------------------------------------------------- */
 /* Mapping to engine types                                                     */
 /* -------------------------------------------------------------------------- */

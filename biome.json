@@ -53,31 +53,6 @@
 			}
 		},
 		{
-			"includes": [
-				"src/**/*.ts",
-				"src/**/*.tsx",
-				"!src/server/fn.ts",
-				"!src/server/auth.ts"
-			],
-			"linter": {
-				"rules": {
-					"style": {
-						"noRestrictedImports": {
-							"level": "error",
-							"options": {
-								"paths": {
-									"@tanstack/react-start": {
-										"importNames": ["createServerFn"],
-										"message": "Create server functions with protectedFn from #/server/fn.ts — it injects the Clerk userId server-side. Raw createServerFn is only permitted in src/server/fn.ts."
-									}
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		{
 			"includes": ["src/lib/payroll/**/*"],
 			"linter": {
 				"rules": {

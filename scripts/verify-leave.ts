@@ -28,7 +28,7 @@ const {
 } = await import("#/db/repo/leave.ts");
 const { createUserHoliday } = await import("#/db/repo/holidays.ts");
 const { findRecordsInRange } = await import("#/db/repo/dtr.ts");
-const { fileLeaveFor, cancelLeaveFor } = await import("#/server/leave.ts");
+const { fileLeaveFor, cancelLeaveFor } = await import("#/server/core/leave.ts");
 const { summarizeBalances } = await import("#/lib/payroll/leave.ts");
 
 const USER = "user_leave_probe";

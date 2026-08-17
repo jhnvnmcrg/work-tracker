@@ -1,5 +1,4 @@
-import { and, eq } from "drizzle-orm";
-import { db } from "#/db/index.ts";
+import { createServerFn } from "@tanstack/react-start";
 import {
 	deleteStatutorySchedule,
 	findStatutorySchedules,
@@ -10,8 +9,8 @@ import {
 	ensureUserBootstrap,
 	findEmploymentTerms,
 	findSchedules,
+	updateScheduleRestDays,
 } from "#/db/repo/profile.ts";
-import { workScheduleDays } from "#/db/schema/index.ts";
 import { resolveEffective } from "#/lib/payroll/effective.ts";
 import { deriveRateBasis } from "#/lib/payroll/rates.ts";
 import type { StatutoryScheduleData } from "#/lib/payroll/statutory.ts";
@@ -22,7 +21,7 @@ import {
 	saveScheduleInput,
 	updateTermsInput,
 } from "#/schemas/payroll.ts";
-import { protectedFn } from "./fn.ts";
+import { authedMiddleware } from "./auth.ts";
 
 export interface SettingsView {
 	termsId: number | null;
@@ -45,8 +44,9 @@ export interface SettingsView {
 	factorMismatch: { expectedFactor: number; workdaysPerWeek: number } | null;
 }
 
-export const getSettings = protectedFn({ method: "GET" }).handler(
-	async ({ context }): Promise<SettingsView> => {
+export const getSettings = createServerFn({ method: "GET" })
+	.middleware([authedMiddleware])
+	.handler(async ({ context }): Promise<SettingsView> => {
 		await ensureUserBootstrap(context.userId);
 		const today = todayInManila();
 		const [terms, schedules] = await Promise.all([
@@ -58,7 +58,6 @@ export const getSettings = protectedFn({ method: "GET" }).handler(
 		const schedule = resolveEffective(schedules, today);
 		const restDays =
 			schedule?.days.filter((d) => d.isRestDay).map((d) => d.weekday) ?? [];
-		const workdaysPerWeek = 7 - restDays.length;
 
 		const rates = deriveRateBasis({
 			monthlyRateCentavos: active?.monthlyRateCentavos ?? 0,
@@ -91,13 +90,13 @@ export const getSettings = protectedFn({ method: "GET" }).handler(
 			hourlyRateCentavos: rates.hourlyCentavos,
 			factorMismatch:
 				Math.abs(expectedFactor - configuredFactor) > 8
-					? { expectedFactor, workdaysPerWeek }
+					? { expectedFactor, workdaysPerWeek: 7 - restDays.length }
 					: null,
 		};
-	},
-);
+	});
 
-export const updateSettings = protectedFn()
+export const updateSettings = createServerFn({ method: "POST" })
+	.middleware([authedMiddleware])
 	.validator(updateTermsInput)
 	.handler(async ({ data, context }) => {
 		await ensureUserBootstrap(context.userId);
@@ -122,34 +121,14 @@ export const updateSettings = protectedFn()
 			philhealthTiming: data.philhealthTiming,
 			pagibigTiming: data.pagibigTiming,
 			taxExempt: data.taxExempt,
-			// A 313 factor implies holidays are covered but rest days are not.
+			// A 365 factor is the only one that covers rest days too.
 			monthlyRateCoversRestDays: data.workingDaysFactorX100 >= 36_500,
 			monthlyRateCoversHolidays: true,
 		});
 
 		const schedule = resolveEffective(schedules, today);
 		if (schedule) {
-			const rest = new Set(data.restDays);
-			for (const day of schedule.days) {
-				const isRestDay = rest.has(day.weekday);
-				await db
-					.update(workScheduleDays)
-					.set({
-						isRestDay,
-						standardWorkMinutes: isRestDay ? 0 : 480,
-						amInMinute: isRestDay ? null : 480,
-						amOutMinute: isRestDay ? null : 720,
-						pmInMinute: isRestDay ? null : 780,
-						pmOutMinute: isRestDay ? null : 1020,
-						breakMinutes: isRestDay ? 0 : 60,
-					})
-					.where(
-						and(
-							eq(workScheduleDays.userId, context.userId),
-							eq(workScheduleDays.id, day.id),
-						),
-					);
-			}
+			await updateScheduleRestDays(context.userId, schedule.id, data.restDays);
 		}
 
 		return { updated: true };
@@ -166,8 +145,9 @@ export interface StatutoryOverview {
 	today: string;
 }
 
-export const getStatutoryTables = protectedFn({ method: "GET" }).handler(
-	async ({ context }): Promise<StatutoryOverview> => {
+export const getStatutoryTables = createServerFn({ method: "GET" })
+	.middleware([authedMiddleware])
+	.handler(async ({ context }): Promise<StatutoryOverview> => {
 		await ensureUserBootstrap(context.userId);
 		const today = todayInManila();
 		const schedules = await findStatutorySchedules(context.userId);
@@ -189,10 +169,10 @@ export const getStatutoryTables = protectedFn({ method: "GET" }).handler(
 		);
 
 		return { schedules, missingToday, today };
-	},
-);
+	});
 
-export const saveStatutoryTable = protectedFn()
+export const saveStatutoryTable = createServerFn({ method: "POST" })
+	.middleware([authedMiddleware])
 	.validator(saveScheduleInput)
 	.handler(async ({ data, context }) => {
 		await ensureUserBootstrap(context.userId);
@@ -200,7 +180,8 @@ export const saveStatutoryTable = protectedFn()
 		return { id };
 	});
 
-export const removeStatutoryTable = protectedFn()
+export const removeStatutoryTable = createServerFn({ method: "POST" })
+	.middleware([authedMiddleware])
 	.validator(deleteScheduleInput)
 	.handler(async ({ data, context }) => ({
 		deleted: await deleteStatutorySchedule(context.userId, data.id),

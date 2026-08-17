@@ -1,3 +1,4 @@
+import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { findLeaveDaysInRange, findRecordsInRange } from "#/db/repo/dtr.ts";
 import { findHolidaysInYear } from "#/db/repo/holidays.ts";
@@ -36,7 +37,7 @@ import {
 } from "#/lib/payroll/time.ts";
 import { DEFAULT_PUNCH_POLICY } from "#/lib/payroll/types.ts";
 import { periodKeySchema } from "#/schemas/dtr.ts";
-import { protectedFn } from "./fn.ts";
+import { authedMiddleware } from "./auth.ts";
 
 /**
  * Loads everything a payslip needs and runs the pure engine.
@@ -227,7 +228,8 @@ function periodLabel(year: number, month: number, half: 1 | 2, end: string) {
  * Drafts are deliberately not stored: a stored draft goes stale the moment a
  * time record changes, and there is no upside to keeping one.
  */
-export const previewPayslip = protectedFn({ method: "GET" })
+export const previewPayslip = createServerFn({ method: "GET" })
+	.middleware([authedMiddleware])
 	.validator(z.object({ periodKey: periodKeySchema }))
 	.handler(async ({ data, context }): Promise<PayslipView> => {
 		const { result, bounds } = await computeForPeriod(
@@ -265,7 +267,8 @@ export const previewPayslip = protectedFn({ method: "GET" })
  * moment and never recomputed. Re-deriving them later against updated
  * contribution tables would explain an old payslip using new rules.
  */
-export const finalizePayslip = protectedFn()
+export const finalizePayslip = createServerFn({ method: "POST" })
+	.middleware([authedMiddleware])
 	.validator(z.object({ periodKey: periodKeySchema }))
 	.handler(async ({ data, context }) => {
 		const { result, bounds } = await computeForPeriod(
@@ -358,7 +361,8 @@ export const finalizePayslip = protectedFn()
 		return { finalized: true, reasons: [] };
 	});
 
-export const voidPayslipFn = protectedFn()
+export const voidPayslipFn = createServerFn({ method: "POST" })
+	.middleware([authedMiddleware])
 	.validator(
 		z.object({
 			payslipId: z.number().int().positive(),
@@ -380,7 +384,8 @@ export interface PayslipListItem {
 	finalizedAt: string | null;
 }
 
-export const getPayslipList = protectedFn({ method: "GET" })
+export const getPayslipList = createServerFn({ method: "GET" })
+	.middleware([authedMiddleware])
 	.validator(z.object({}).optional())
 	.handler(async ({ context }) => {
 		await ensureUserBootstrap(context.userId);

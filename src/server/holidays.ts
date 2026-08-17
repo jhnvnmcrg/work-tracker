@@ -1,3 +1,4 @@
+import { createServerFn } from "@tanstack/react-start";
 import {
 	createUserHoliday,
 	deleteUserHoliday,
@@ -18,8 +19,8 @@ import {
 	seedHolidaysInput,
 	updateHolidayInput,
 } from "#/schemas/holidays.ts";
-import { recomputeDates } from "./dtr.ts";
-import { protectedFn } from "./fn.ts";
+import { authedMiddleware } from "./auth.ts";
+import { recomputeDates } from "./core/dtr.ts";
 
 export interface HolidayView {
 	id: number;
@@ -51,7 +52,8 @@ function toView(row: HolidayRow): HolidayView {
 	};
 }
 
-export const getHolidayYear = protectedFn({ method: "GET" })
+export const getHolidayYear = createServerFn({ method: "GET" })
+	.middleware([authedMiddleware])
 	.validator(holidayYearInput)
 	.handler(async ({ data, context }): Promise<HolidayYearBundle> => {
 		await ensureUserBootstrap(context.userId);
@@ -71,7 +73,8 @@ export const getHolidayYear = protectedFn({ method: "GET" })
  * out and reported back, because a plausible but wrong holiday silently changes
  * what a day is worth.
  */
-export const seedHolidayYear = protectedFn()
+export const seedHolidayYear = createServerFn({ method: "POST" })
+	.middleware([authedMiddleware])
 	.validator(seedHolidaysInput)
 	.handler(async ({ data, context }) => {
 		await ensureUserBootstrap(context.userId);
@@ -110,7 +113,8 @@ export const seedHolidayYear = protectedFn()
 		};
 	});
 
-export const addHoliday = protectedFn()
+export const addHoliday = createServerFn({ method: "POST" })
+	.middleware([authedMiddleware])
 	.validator(createHolidayInput)
 	.handler(async ({ data, context }) => {
 		await ensureUserBootstrap(context.userId);
@@ -125,7 +129,8 @@ export const addHoliday = protectedFn()
 		return toView(row);
 	});
 
-export const editHoliday = protectedFn()
+export const editHoliday = createServerFn({ method: "POST" })
+	.middleware([authedMiddleware])
 	.validator(updateHolidayInput)
 	.handler(async ({ data, context }) => {
 		const { id, ...patch } = data;
@@ -136,7 +141,8 @@ export const editHoliday = protectedFn()
 		return { updated };
 	});
 
-export const removeHoliday = protectedFn()
+export const removeHoliday = createServerFn({ method: "POST" })
+	.middleware([authedMiddleware])
 	.validator(deleteHolidayInput)
 	.handler(async ({ data, context }) => {
 		// Read the row first so the date is known for the recompute; scoping by

@@ -27,7 +27,7 @@ type TimeRecordInsert = Parameters<
 	Awaited<typeof import("#/db/repo/dtr.ts")>["upsertRecords"]
 >[1][number];
 const { computeDailyMinutes } = await import("#/lib/payroll/daily.ts");
-const { buildDashboard } = await import("#/server/dashboard.ts");
+const { buildDashboard } = await import("#/server/core/dashboard.ts");
 const { DEFAULT_PUNCH_POLICY } = await import("#/lib/payroll/types.ts");
 const t = await import("#/lib/payroll/time.ts");
 
@@ -70,14 +70,25 @@ const elapsed = t
 		return w !== 0 && w !== 6;
 	});
 
-check("the current cutoff has elapsed workdays to test with", elapsed.length >= 3, `${elapsed.length}`);
+/*
+ * The dashboard always reports on the *live* cutoff, so how much can be checked
+ * depends on how far into it today is. On the 17th there is a single elapsed
+ * workday; asserting three would fail for a reason that has nothing to do with
+ * the code. Scale the checks to what the calendar actually allows.
+ */
+const canTestGap = elapsed.length >= 2;
+console.log(
+	`  cutoff ${current.start}..${current.end}, ${elapsed.length} elapsed workday(s)` +
+		(canTestGap ? "" : " — too early in the cutoff to test a gap; those checks are skipped"),
+);
+check("the current cutoff has at least one elapsed workday", elapsed.length >= 1, `${elapsed.length}`);
 
-const gapDate = elapsed[0];
-const missingOutDate = elapsed[1];
+const gapDate = canTestGap ? elapsed[0] : null;
+const missingOutDate = canTestGap ? elapsed[1] : elapsed[0];
 const rows: TimeRecordInsert[] = [];
 
 for (const date of elapsed) {
-	if (date === gapDate) continue; // deliberately left with no record at all
+	if (gapDate && date === gapDate) continue; // deliberately left with no record at all
 	const punches =
 		date === missingOutDate
 			? { amIn: 480, amOut: 720, pmIn: 780, pmOut: null }
@@ -157,30 +168,41 @@ check(
 );
 
 check("weekly series is produced", dash.weeks.length > 0, `${dash.weeks.length} weeks`);
-check(
-	"punctuality reflects the 2-minute late arrivals",
-	dash.weeks.some((w) => w.punctualityMinutes === 2),
-	JSON.stringify(dash.weeks.map((w) => w.punctualityMinutes)),
-);
+if (rows.some((r) => r.lateMinutes === 2)) {
+	check(
+		"punctuality reflects the 2-minute late arrivals",
+		dash.weeks.some((w) => w.punctualityMinutes === 2),
+		JSON.stringify(dash.weeks.map((w) => w.punctualityMinutes)),
+	);
+}
 
 const codes = dash.anomalies.map((a) => a.code);
-check("the untouched workday is reported as a gap", codes.includes("NO_RECORD_ON_SCHEDULED_DAY"), codes.join(","));
-check("the missing clock-out is reported", codes.includes("MISSING_TIME_OUT"));
-check(
-	"the gap names the right date",
-	dash.anomalies
-		.find((a) => a.code === "NO_RECORD_ON_SCHEDULED_DAY")
-		?.dates.includes(gapDate) === true,
-	gapDate,
-);
+check("the missing clock-out is reported", codes.includes("MISSING_TIME_OUT"), codes.join(","));
+if (canTestGap && gapDate) {
+	check(
+		"the untouched workday is reported as a gap",
+		codes.includes("NO_RECORD_ON_SCHEDULED_DAY"),
+		codes.join(","),
+	);
+	check(
+		"the gap names the right date",
+		dash.anomalies
+			.find((a) => a.code === "NO_RECORD_ON_SCHEDULED_DAY")
+			?.dates.includes(gapDate) === true,
+		gapDate,
+	);
+}
 check(
 	"every anomaly carries a message usable without AI",
 	dash.anomalies.every((a) => a.defaultMessage.length > 10),
 );
+const rank = { critical: 0, warning: 1, info: 2 } as const;
 check(
-	"the most serious anomaly is listed first",
-	dash.anomalies.length === 0 || dash.anomalies[0].severity === "critical",
-	dash.anomalies[0]?.severity ?? "none",
+	"anomalies are ordered most serious first",
+	dash.anomalies.every(
+		(a, i) => i === 0 || rank[dash.anomalies[i - 1].severity] <= rank[a.severity],
+	),
+	dash.anomalies.map((a) => a.severity).join(",") || "none",
 );
 
 check("no payslips finalized, so year-to-date is zero", dash.kpis.ytdGrossCentavos === 0);
