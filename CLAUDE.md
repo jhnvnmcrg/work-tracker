@@ -104,6 +104,14 @@ the real path. Each writes and then removes a throwaway user.
   the clause emits camelCase and fails with *column excluded.amInMinute does not
   exist*. `upsertRecords` uses delete-then-insert inside one transaction instead.
   Unit tests cannot catch this class of bug — `npm run verify:dtr` does.
+- **A row set that must always be complete is written with delete-then-insert.**
+  `work_schedule_days` must hold all seven weekdays. Both `ensureUserBootstrap`
+  and `updateScheduleRestDays` used to *update* existing rows, so a schedule with
+  no day rows was unrecoverable: every day looked like a working day, the
+  factor-vs-schedule warning fired permanently, and ticking a rest day saved
+  nothing while appearing to succeed. Make what is stored a function of the input
+  alone. Past payroll is unaffected — each DTR row carries its own frozen
+  `scheduleSnapshot`.
 - **Vitest uses its own `vitest.config.ts`**, not `vite.config.ts`, so tests do
   not load the React compiler or claim a Neon database.
 - Biome's `includes` must stay anchored (`src/**`, not `**/src/**`) or it

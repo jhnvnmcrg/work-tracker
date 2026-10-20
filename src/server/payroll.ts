@@ -156,6 +156,7 @@ async function computeForPeriod(
 	});
 
 	const result = computePayslip({
+		today,
 		period: {
 			year: bounds.year,
 			month: bounds.month,

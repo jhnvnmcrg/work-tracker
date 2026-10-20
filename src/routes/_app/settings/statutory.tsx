@@ -22,6 +22,7 @@ import {
 import { Input } from "#/components/ui/input.tsx";
 import { Label } from "#/components/ui/label.tsx";
 import { pesosToCentavos } from "#/lib/payroll/money.ts";
+import { scheduleProblem } from "#/lib/payroll/statutory.ts";
 import { todayInManila } from "#/lib/payroll/time.ts";
 import type { StatutoryKind } from "#/lib/payroll/types.ts";
 import {
@@ -171,10 +172,13 @@ function StatutoryPage() {
 			<div className="grid gap-4">
 				{KINDS.map((meta) => {
 					const schedules = data.schedules.filter((s) => s.kind === meta.kind);
+					// Usable, not merely present: a table saved without a rate or without
+					// bracket rows resolves fine and computes nothing.
 					const active = schedules.find(
 						(s) =>
 							s.effectiveFrom <= data.today &&
-							(s.effectiveTo === null || s.effectiveTo >= data.today),
+							(s.effectiveTo === null || s.effectiveTo >= data.today) &&
+							scheduleProblem(s) === null,
 					);
 
 					return (
@@ -231,7 +235,14 @@ function StatutoryPage() {
 																? ` – ${schedule.effectiveTo}`
 																: " onwards"}
 														</td>
-														<td className="px-3 py-2">{schedule.name}</td>
+														<td className="px-3 py-2">
+															{schedule.name}
+															{scheduleProblem(schedule) ? (
+																<span className="mt-0.5 block text-xs text-destructive">
+																	{scheduleProblem(schedule)}
+																</span>
+															) : null}
+														</td>
 														<td className="px-3 py-2 tabular-nums">
 															{schedule.brackets.length > 0
 																? `${schedule.brackets.length} bracket(s)`
@@ -357,6 +368,30 @@ function ScheduleForm({
 				error instanceof Error ? error.message : "Could not save that table.",
 			),
 	});
+
+	/*
+	 * A table that saves but computes nothing is worse than no table: the payslip
+	 * refuses to finalize while Settings looks complete. Block it at the source.
+	 */
+	const parsedRate = Number(ratePercent);
+	const incomplete =
+		meta.shape === "rate_range"
+			? !Number.isFinite(parsedRate) ||
+				ratePercent.trim() === "" ||
+				parsedRate <= 0
+			: brackets.length === 0 ||
+				brackets.every((b) =>
+					meta.shape === "brackets_amount"
+						? b.employeeAmount.trim() === ""
+						: meta.shape === "brackets_rate"
+							? b.employeeRate.trim() === ""
+							: b.baseAmount.trim() === "" && b.excessRate.trim() === "",
+				);
+
+	const incompleteReason =
+		meta.shape === "rate_range"
+			? "Enter a premium rate above zero."
+			: "Enter at least one bracket row with a value.";
 
 	const patch = (index: number, key: keyof DraftBracket, value: string) =>
 		setBrackets((current) =>
@@ -547,10 +582,17 @@ function ScheduleForm({
 				</div>
 			)}
 
-			<div className="flex justify-end gap-2">
+			<div className="flex items-center justify-end gap-3">
+				{incomplete || citation.trim() === "" ? (
+					<span className="text-xs text-destructive">
+						{citation.trim() === ""
+							? "A source citation is required."
+							: incompleteReason}
+					</span>
+				) : null}
 				<Button
 					onClick={() => save.mutate()}
-					disabled={save.isPending || citation.trim() === ""}
+					disabled={save.isPending || citation.trim() === "" || incomplete}
 				>
 					{save.isPending ? "Saving…" : `Save ${meta.label} table`}
 				</Button>

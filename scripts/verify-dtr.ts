@@ -17,10 +17,10 @@ if (!process.env.DATABASE_URL) {
 }
 
 const { db } = await import("#/db/index.ts");
-const { userProfiles } = await import("#/db/schema/index.ts");
-const { eq } = await import("drizzle-orm");
+const { userProfiles, workScheduleDays } = await import("#/db/schema/index.ts");
+const { and, eq } = await import("drizzle-orm");
 const {
-  ensureUserBootstrap, findEmploymentTerms, findSchedules,
+  ensureUserBootstrap, findEmploymentTerms, findSchedules, updateScheduleRestDays,
   toPunchPolicy, toScheduleSnapshot,
 } = await import("#/db/repo/profile.ts");
 const { findRecordsInRange, upsertRecords } = await import("#/db/repo/dtr.ts");
@@ -46,6 +46,34 @@ const schedules = await findSchedules(USER);
 check("bootstrap is idempotent", terms.length === 1 && schedules.length === 1,
   `${terms.length} terms, ${schedules.length} schedules`);
 check("default schedule has 7 weekdays", schedules[0].days.length === 7);
+
+/* --- the work schedule always keeps all seven weekday rows --------------
+ * A schedule that lost its day rows used to be unrecoverable: rest days could
+ * not be saved, so the factor-vs-schedule warning could never be cleared. */
+await db
+  .delete(workScheduleDays)
+  .where(and(eq(workScheduleDays.userId, USER),
+             eq(workScheduleDays.scheduleId, schedules[0].id)));
+check("weekday rows can be lost", (await findSchedules(USER))[0].days.length === 0);
+
+await ensureUserBootstrap(USER);
+check(
+  "bootstrap heals a schedule with no weekday rows",
+  (await findSchedules(USER))[0].days.length === 7,
+  `${(await findSchedules(USER))[0].days.length} rows`,
+);
+
+// Sunday-only rest: six workdays a week, which is what factor 313 assumes.
+await updateScheduleRestDays(USER, schedules[0].id, [0]);
+const sundayOnly = (await findSchedules(USER))[0].days;
+const restWeekdays = sundayOnly.filter((d) => d.isRestDay).map((d) => d.weekday);
+check("rest days save even from an empty set", sundayOnly.length === 7 && restWeekdays.length === 1,
+  `${sundayOnly.length} rows, rest=[${restWeekdays}]`);
+check("the rest day is Sunday", restWeekdays[0] === 0, `weekday ${restWeekdays[0]}`);
+check("six workdays a week implies factor 313", 365 - restWeekdays.length * 52 === 313);
+
+// Put the fixture back to Mon-Fri for the rest of this script.
+await updateScheduleRestDays(USER, schedules[0].id, [0, 6]);
 
 const first = t.cutoffBounds(2026, 8, 1);
 const second = t.cutoffBounds(2026, 8, 2);

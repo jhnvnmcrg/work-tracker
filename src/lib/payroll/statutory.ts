@@ -200,7 +200,7 @@ export function computePhilhealth(
 	monthlyBasis: Centavos,
 	schedule: StatutoryScheduleData | null,
 ): StatutoryResult {
-	if (!schedule || schedule.ratePpm === null) {
+	if (!schedule || schedule.ratePpm === null || schedule.ratePpm <= 0) {
 		return notConfigured("philhealth", monthlyBasis);
 	}
 
@@ -360,4 +360,31 @@ export function ppmToPercentString(ppm: Ppm): string {
 /** Converts a percentage entered by the user into parts per million. */
 export function percentToPpm(percent: number): Ppm {
 	return mulDivRound(Math.round(percent * 10_000), 1, 1);
+}
+
+/**
+ * Whether a schedule can actually produce a contribution.
+ *
+ * Existing is not the same as being usable. A PhilHealth row saved without a
+ * premium rate, or a bracketed scheme saved with no bracket rows, resolves fine
+ * but computes nothing — which previously let Settings report "Configured"
+ * while the payslip refused to finalize for exactly that table. Both screens
+ * now ask this one question.
+ */
+export function isScheduleUsable(schedule: StatutoryScheduleData): boolean {
+	if (schedule.kind === "philhealth") {
+		return schedule.ratePpm !== null && schedule.ratePpm > 0;
+	}
+	// SSS, Pag-IBIG and BIR are all driven by bracket rows.
+	return schedule.brackets.length > 0;
+}
+
+/** Why a schedule is unusable, phrased for the person who has to fix it. */
+export function scheduleProblem(
+	schedule: StatutoryScheduleData,
+): string | null {
+	if (isScheduleUsable(schedule)) return null;
+	return schedule.kind === "philhealth"
+		? "No premium rate is set, so this table computes nothing."
+		: "No bracket rows were entered, so this table computes nothing.";
 }

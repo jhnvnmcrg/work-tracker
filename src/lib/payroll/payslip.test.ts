@@ -225,6 +225,8 @@ function input(
 ): PayslipInput {
 	const bounds = cutoffBounds(year, month, half);
 	return {
+		// Well after every fixture period, so no day counts as "not yet worked".
+		today: TODAY,
 		period: {
 			year,
 			month,
@@ -683,5 +685,57 @@ describe("snapshot replay", () => {
 		expect(replayed.snapshot.statutoryScheduleIds.sss).toBe(100);
 		expect(replayed.lines).toEqual(original.lines);
 		expect(replayed.netPayCentavos).toBe(original.netPayCentavos);
+	});
+});
+
+describe("a cutoff still in progress", () => {
+	it("does not report days that have not happened yet as gaps", () => {
+		// Mid-cutoff: today is the 17th and the period runs to the 31st.
+		const base = input(2026, 8, 2, buildDays(2026, 8, 2));
+		const days = base.days.map((day) =>
+			day.date > "2026-08-17" ? { ...day, hasRecord: false } : day,
+		);
+		const result = computePayslip({
+			...base,
+			today: assertIsoDate("2026-08-17"),
+			days,
+		});
+
+		expect(result.totals.unaccountedDates).toEqual([]);
+		expect(result.warnings.map((w) => w.code)).not.toContain(
+			"unaccounted_days",
+		);
+	});
+
+	it("still reports a gap on a day that has already passed", () => {
+		const base = input(2026, 8, 2, buildDays(2026, 8, 2));
+		const days = base.days.map((day) =>
+			day.date === "2026-08-17" ? { ...day, hasRecord: false } : day,
+		);
+		const result = computePayslip({
+			...base,
+			today: assertIsoDate("2026-08-20"),
+			days: days.map((day) =>
+				day.date > "2026-08-20" ? { ...day, hasRecord: false } : day,
+			),
+		});
+
+		expect(result.totals.unaccountedDates).toContain("2026-08-17");
+		expect(result.totals.unaccountedDates).not.toContain("2026-08-21");
+	});
+
+	it("says the cutoff is still open when it is", () => {
+		const base = input(2026, 8, 2, buildDays(2026, 8, 2));
+		const days = base.days.map((day) =>
+			day.date === "2026-08-17" ? { ...day, hasRecord: false } : day,
+		);
+		const result = computePayslip({
+			...base,
+			today: assertIsoDate("2026-08-20"),
+			days,
+		});
+		expect(
+			result.warnings.find((w) => w.code === "unaccounted_days")?.message,
+		).toMatch(/still open/);
 	});
 });

@@ -89,10 +89,13 @@ const rows: TimeRecordInsert[] = [];
 
 for (const date of elapsed) {
 	if (gapDate && date === gapDate) continue; // deliberately left with no record at all
+	// Every arrival is 08:02, so the mean arrival delta is exactly 2 minutes no
+	// matter how the elapsed days fall across ISO week boundaries. One day is
+	// missing its clock-out, which is a separate axis from arrival time.
 	const punches =
 		date === missingOutDate
-			? { amIn: 480, amOut: 720, pmIn: 780, pmOut: null }
-			: { amIn: 482, amOut: 720, pmIn: 780, pmOut: 1020 }; // 2 minutes late
+			? { amIn: 482, amOut: 720, pmIn: 780, pmOut: null }
+			: { amIn: 482, amOut: 720, pmIn: 780, pmOut: 1020 };
 	const computed = computeDailyMinutes({
 		date,
 		today,
@@ -169,9 +172,14 @@ check(
 
 check("weekly series is produced", dash.weeks.length > 0, `${dash.weeks.length} weeks`);
 if (rows.some((r) => r.lateMinutes === 2)) {
+	// Punctuality is the *mean* arrival delta for the week, not a sum, so with
+	// every fixture arrival 2 minutes late every non-empty week must read 2.
 	check(
-		"punctuality reflects the 2-minute late arrivals",
-		dash.weeks.some((w) => w.punctualityMinutes === 2),
+		"punctuality is the mean arrival delta, 2 minutes late",
+		dash.weeks.some((w) => w.punctualityMinutes !== null) &&
+			dash.weeks.every(
+				(w) => w.punctualityMinutes === null || w.punctualityMinutes === 2,
+			),
 		JSON.stringify(dash.weeks.map((w) => w.punctualityMinutes)),
 	);
 }

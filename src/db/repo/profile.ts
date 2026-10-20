@@ -86,6 +86,29 @@ const DEFAULT_SCHEDULE_DAYS = [
 	{ weekday: 6, isRestDay: true },
 ] as const;
 
+/** The seven weekday rows a schedule must always have, given its rest days. */
+function scheduleDayRows(
+	userId: string,
+	scheduleId: number,
+	restDays: ReadonlySet<number>,
+) {
+	return [0, 1, 2, 3, 4, 5, 6].map((weekday) => {
+		const isRestDay = restDays.has(weekday);
+		return {
+			userId,
+			scheduleId,
+			weekday,
+			isRestDay,
+			amInMinute: isRestDay ? null : 480,
+			amOutMinute: isRestDay ? null : 720,
+			pmInMinute: isRestDay ? null : 780,
+			pmOutMinute: isRestDay ? null : 1020,
+			standardWorkMinutes: isRestDay ? 0 : 480,
+			breakMinutes: isRestDay ? 0 : 60,
+		};
+	});
+}
+
 /**
  * Creates the rows a new account needs, idempotently.
  *
@@ -130,26 +153,43 @@ export async function ensureUserBootstrap(
 			.where(eq(workSchedules.userId, userId))
 			.limit(1);
 
+		const defaultRestDays = new Set(
+			DEFAULT_SCHEDULE_DAYS.filter((day) => day.isRestDay).map(
+				(day) => day.weekday,
+			),
+		);
+
 		if (existingSchedule.length === 0) {
 			const [schedule] = await tx
 				.insert(workSchedules)
 				.values({ userId, name: "Default", effectiveFrom })
 				.returning({ id: workSchedules.id });
+			await tx
+				.insert(workScheduleDays)
+				.values(scheduleDayRows(userId, schedule.id, defaultRestDays));
+		} else {
+			// A schedule can exist with no weekday rows — an interrupted setup, or a
+			// cascade that took the children with it. Left alone the account is
+			// stuck: every day looks like a working day, so the factor warning fires
+			// and rest days cannot be saved. Heal it rather than skipping.
+			const hasDays = await tx
+				.select({ id: workScheduleDays.id })
+				.from(workScheduleDays)
+				.where(
+					and(
+						eq(workScheduleDays.userId, userId),
+						eq(workScheduleDays.scheduleId, existingSchedule[0].id),
+					),
+				)
+				.limit(1);
 
-			await tx.insert(workScheduleDays).values(
-				DEFAULT_SCHEDULE_DAYS.map((day) => ({
-					userId,
-					scheduleId: schedule.id,
-					weekday: day.weekday,
-					isRestDay: day.isRestDay,
-					amInMinute: day.isRestDay ? null : 480,
-					amOutMinute: day.isRestDay ? null : 720,
-					pmInMinute: day.isRestDay ? null : 780,
-					pmOutMinute: day.isRestDay ? null : 1020,
-					standardWorkMinutes: day.isRestDay ? 0 : 480,
-					breakMinutes: day.isRestDay ? 0 : 60,
-				})),
-			);
+			if (hasDays.length === 0) {
+				await tx
+					.insert(workScheduleDays)
+					.values(
+						scheduleDayRows(userId, existingSchedule[0].id, defaultRestDays),
+					);
+			}
 		}
 	});
 }
@@ -167,37 +207,26 @@ export async function updateScheduleRestDays(
 	scheduleId: number,
 	restDays: readonly number[],
 ): Promise<void> {
-	const rest = new Set(restDays);
-	const days = await db
-		.select({ id: workScheduleDays.id, weekday: workScheduleDays.weekday })
-		.from(workScheduleDays)
-		.where(
-			and(
-				eq(workScheduleDays.userId, userId),
-				eq(workScheduleDays.scheduleId, scheduleId),
-			),
-		);
-
-	for (const day of days) {
-		const isRestDay = rest.has(day.weekday);
-		await db
-			.update(workScheduleDays)
-			.set({
-				isRestDay,
-				standardWorkMinutes: isRestDay ? 0 : 480,
-				amInMinute: isRestDay ? null : 480,
-				amOutMinute: isRestDay ? null : 720,
-				pmInMinute: isRestDay ? null : 780,
-				pmOutMinute: isRestDay ? null : 1020,
-				breakMinutes: isRestDay ? 0 : 60,
-			})
+	// Delete-then-insert, not update. An update-only version silently did nothing
+	// when the weekday rows were missing: ticking a rest day looked saved, the
+	// schedule stayed at seven working days, and the factor warning never cleared.
+	// Replacing the set makes what is stored a function of the input alone.
+	//
+	// Past records are unaffected: each daily_time_records row carries its own
+	// frozen scheduleSnapshot.
+	await db.transaction(async (tx) => {
+		await tx
+			.delete(workScheduleDays)
 			.where(
 				and(
 					eq(workScheduleDays.userId, userId),
-					eq(workScheduleDays.id, day.id),
+					eq(workScheduleDays.scheduleId, scheduleId),
 				),
 			);
-	}
+		await tx
+			.insert(workScheduleDays)
+			.values(scheduleDayRows(userId, scheduleId, new Set(restDays)));
+	});
 }
 
 /* -------------------------------------------------------------------------- */

@@ -13,7 +13,10 @@ import {
 } from "#/db/repo/profile.ts";
 import { resolveEffective } from "#/lib/payroll/effective.ts";
 import { deriveRateBasis } from "#/lib/payroll/rates.ts";
-import type { StatutoryScheduleData } from "#/lib/payroll/statutory.ts";
+import {
+	isScheduleUsable,
+	type StatutoryScheduleData,
+} from "#/lib/payroll/statutory.ts";
 import { todayInManila } from "#/lib/payroll/time.ts";
 import type { StatutoryKind } from "#/lib/payroll/types.ts";
 import {
@@ -158,13 +161,16 @@ export const getStatutoryTables = createServerFn({ method: "GET" })
 			"pagibig",
 			"withholding_tax",
 		];
+		// A schedule that exists but computes nothing is not configured. Checking
+		// mere existence is what let this page disagree with the payslip.
 		const missingToday = kinds.filter(
 			(kind) =>
 				!schedules.some(
 					(schedule) =>
 						schedule.kind === kind &&
 						schedule.effectiveFrom <= today &&
-						(schedule.effectiveTo === null || schedule.effectiveTo >= today),
+						(schedule.effectiveTo === null || schedule.effectiveTo >= today) &&
+						isScheduleUsable(schedule),
 				),
 		);
 

@@ -6,9 +6,11 @@ import {
 	computeSss,
 	computeWithholdingTax,
 	findBracket,
+	isScheduleUsable,
 	resolveSchedule,
 	type StatutoryBracketData,
 	type StatutoryScheduleData,
+	scheduleProblem,
 } from "./statutory.ts";
 
 /**
@@ -358,5 +360,50 @@ describe("allocateToCutoff", () => {
 	it("applies every cutoff for per-cutoff items such as tax", () => {
 		expect(allocateToCutoff(50_000, "every_cutoff", 1)).toBe(50_000);
 		expect(allocateToCutoff(50_000, "every_cutoff", 2)).toBe(50_000);
+	});
+});
+
+describe("isScheduleUsable", () => {
+	it("rejects a PhilHealth table saved without a rate", () => {
+		// The exact shape that let Settings say "Configured" while the payslip
+		// refused to finalize.
+		const noRate = schedule({
+			id: 1,
+			kind: "philhealth",
+			employeeSharePpm: 500_000,
+		});
+		expect(isScheduleUsable(noRate)).toBe(false);
+		expect(scheduleProblem(noRate)).toMatch(/premium rate/i);
+		expect(computePhilhealth(4_500_000, noRate).configured).toBe(false);
+	});
+
+	it("rejects a zero rate as well as a missing one", () => {
+		expect(
+			isScheduleUsable(schedule({ id: 2, kind: "philhealth", ratePpm: 0 })),
+		).toBe(false);
+	});
+
+	it("accepts a PhilHealth table with a real rate", () => {
+		expect(
+			isScheduleUsable(
+				schedule({ id: 3, kind: "philhealth", ratePpm: 50_000 }),
+			),
+		).toBe(true);
+	});
+
+	it("rejects a bracketed scheme with no bracket rows", () => {
+		for (const kind of ["sss", "pagibig", "withholding_tax"] as const) {
+			const empty = schedule({ id: 4, kind });
+			expect(isScheduleUsable(empty), kind).toBe(false);
+			expect(scheduleProblem(empty), kind).toMatch(/bracket/i);
+		}
+	});
+
+	it("accepts a bracketed scheme once a row exists", () => {
+		expect(
+			isScheduleUsable(
+				schedule({ id: 5, kind: "sss", brackets: [bracket({ id: 50 })] }),
+			),
+		).toBe(true);
 	});
 });

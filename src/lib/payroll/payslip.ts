@@ -162,6 +162,8 @@ export interface PayslipResult {
 }
 
 export interface PayslipInput {
+	/** Today in Manila. Passed in so the engine stays pure and testable. */
+	today: IsoDate;
 	period: {
 		year: number;
 		month: number;
@@ -192,7 +194,10 @@ export interface PayslipInput {
 	calendarDaysInMonth: number;
 }
 
-function aggregate(days: readonly DayForPayslip[]): PayslipTotals {
+function aggregate(
+	days: readonly DayForPayslip[],
+	today: IsoDate,
+): PayslipTotals {
 	const totals: PayslipTotals = {
 		daysPresent: 0,
 		daysAbsent: 0,
@@ -223,9 +228,17 @@ function aggregate(days: readonly DayForPayslip[]): PayslipTotals {
 		if (m.workedMinutes > 0) totals.daysPresent += 1;
 		if (m.unpaidMinutes > 0 && m.workedMinutes === 0) totals.daysAbsent += 1;
 
-		// A scheduled workday with no record at all is a gap in the record, not
-		// an absence — it must be surfaced rather than quietly deducted.
-		if (day.isScheduledWorkday && !day.hasRecord && !day.isHoliday) {
+		// A scheduled workday with no record is a gap in the record, not an
+		// absence — surfaced rather than quietly deducted. Only days that have
+		// already happened can be gaps: in a cutoff still in progress the
+		// remaining days are simply not worked yet, and reporting them would
+		// make every open period look broken.
+		if (
+			day.isScheduledWorkday &&
+			!day.hasRecord &&
+			!day.isHoliday &&
+			day.date <= today
+		) {
 			totals.unaccountedDates.push(day.date);
 		}
 	}
@@ -235,7 +248,7 @@ function aggregate(days: readonly DayForPayslip[]): PayslipTotals {
 
 export function computePayslip(input: PayslipInput): PayslipResult {
 	const { period, terms, rates, days } = input;
-	const totals = aggregate(days);
+	const totals = aggregate(days, input.today);
 	const lines: PayslipLine[] = [];
 	const warnings: PayslipWarning[] = [];
 
@@ -578,9 +591,14 @@ export function computePayslip(input: PayslipInput): PayslipResult {
 
 	/* -- 9. Warnings -------------------------------------------------------- */
 	if (totals.unaccountedDates.length > 0) {
+		const periodOpen = input.today <= period.endDate;
 		warnings.push({
 			code: "unaccounted_days",
-			message: `${totals.unaccountedDates.length} scheduled workday(s) have no time record. Fill them in or mark them before finalizing.`,
+			message:
+				`${totals.unaccountedDates.length} scheduled workday(s) so far have no time record. Fill them in or mark them before finalizing.` +
+				(periodOpen
+					? " This cutoff is still open, so later days are not counted here."
+					: ""),
 			dates: totals.unaccountedDates,
 			blocksFinalize: terms.unaccountedDayPolicy === "warn",
 		});
