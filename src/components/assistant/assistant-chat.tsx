@@ -59,7 +59,7 @@ export function AssistantChat() {
 				{messages.length === 0 ? (
 					<div className="rounded-xl border bg-card p-6">
 						<Sparkles className="size-5 text-primary" />
-						<h2 className="mt-3 font-serif text-lg font-semibold">
+						<h2 className="mt-3 text-lg font-semibold">
 							Ask about your own records
 						</h2>
 						<p className="mt-1 text-sm text-muted-foreground">

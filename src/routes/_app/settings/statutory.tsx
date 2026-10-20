@@ -186,7 +186,7 @@ function StatutoryPage() {
 							<CardHeader>
 								<div className="flex flex-wrap items-start justify-between gap-2">
 									<div>
-										<CardTitle className="flex items-center gap-2 font-serif text-base">
+										<CardTitle className="flex items-center gap-2 text-base">
 											{meta.label}
 											{active ? (
 												<Badge variant="secondary">Configured</Badge>

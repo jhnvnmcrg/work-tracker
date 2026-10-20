@@ -82,7 +82,7 @@ export function AppSidebar() {
 									<CalendarClock className="size-4" />
 								</div>
 								<div className="grid flex-1 text-left leading-tight">
-									<span className="truncate font-serif text-base font-semibold">
+									<span className="truncate text-base font-semibold">
 										Work Tracker
 									</span>
 									<span className="truncate text-xs text-muted-foreground">

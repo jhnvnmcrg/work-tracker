@@ -153,12 +153,12 @@ function PayslipPage() {
 
 			<Card className="mt-4">
 				<CardContent className="flex flex-wrap items-baseline justify-between gap-2 py-5">
-					<span className="font-serif text-lg font-semibold">Net pay</span>
+					<span className="text-lg font-semibold">Net pay</span>
 					<span
 						className={
 							result.netPayCentavos < 0
-								? "font-serif text-3xl font-bold tabular-nums text-destructive"
-								: "font-serif text-3xl font-bold tabular-nums"
+								? "text-3xl font-bold tabular-nums text-destructive"
+								: "text-3xl font-bold tabular-nums"
 						}
 					>
 						{formatPeso(result.netPayCentavos)}
@@ -168,9 +168,7 @@ function PayslipPage() {
 
 			<Card className="mt-4">
 				<CardHeader>
-					<CardTitle className="font-serif text-base">
-						How this was computed
-					</CardTitle>
+					<CardTitle className="text-base">How this was computed</CardTitle>
 				</CardHeader>
 				<CardContent className="grid gap-2">
 					<dl className="grid gap-1 text-sm sm:grid-cols-2">
@@ -254,7 +252,7 @@ function LineTable({
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle className="font-serif text-base">{title}</CardTitle>
+				<CardTitle className="text-base">{title}</CardTitle>
 			</CardHeader>
 			<CardContent>
 				{lines.length === 0 ? (

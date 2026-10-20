@@ -128,9 +128,7 @@ function HolidaysPage() {
 								<ChevronLeft className="size-4" />
 								<span className="sr-only">Previous year</span>
 							</Button>
-							<span className="min-w-14 text-center font-serif font-semibold">
-								{year}
-							</span>
+							<span className="min-w-14 text-center font-semibold">{year}</span>
 							<Button
 								variant="outline"
 								size="icon"
@@ -189,7 +187,7 @@ function HolidaysPage() {
 
 			<Card>
 				<CardHeader>
-					<CardTitle className="font-serif text-base">
+					<CardTitle className="text-base">
 						{data.holidays.length} holiday(s) in {year}
 					</CardTitle>
 				</CardHeader>

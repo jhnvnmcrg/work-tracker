@@ -124,7 +124,7 @@ export function DtrGrid({
 	);
 
 	return (
-		<div className="surface-dense overflow-x-auto rounded-xl border bg-card">
+		<div className="overflow-x-auto rounded-xl border bg-card">
 			<table className="w-full min-w-[52rem] border-collapse text-sm">
 				<thead>
 					<tr className="border-b text-left text-xs text-muted-foreground">

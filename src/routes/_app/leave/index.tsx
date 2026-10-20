@@ -126,8 +126,8 @@ function LeavePage() {
 							<p
 								className={
 									balance.balanceMinutes < 0
-										? "font-serif text-2xl font-semibold text-destructive"
-										: "font-serif text-2xl font-semibold"
+										? "text-2xl font-semibold text-destructive"
+										: "text-2xl font-semibold"
 								}
 							>
 								{toDays(balance.balanceMinutes, standard)}
@@ -147,7 +147,7 @@ function LeavePage() {
 
 			<Card>
 				<CardHeader>
-					<CardTitle className="font-serif text-base">Filed leave</CardTitle>
+					<CardTitle className="text-base">Filed leave</CardTitle>
 				</CardHeader>
 				<CardContent>
 					{data.requests.length === 0 ? (

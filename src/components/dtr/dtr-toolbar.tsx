@@ -35,7 +35,7 @@ export function MonthSwitcher({ month }: { month: string }) {
 					<span className="sr-only">Previous month</span>
 				</Link>
 			</Button>
-			<span className="min-w-40 text-center font-serif text-base font-semibold">
+			<span className="min-w-40 text-center text-base font-semibold">
 				{monthLabel(month)}
 			</span>
 			<Button variant="outline" size="icon" className="size-8" asChild>

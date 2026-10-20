@@ -57,7 +57,7 @@ function PayslipsPage() {
 							</CardTitle>
 						</CardHeader>
 						<CardContent>
-							<p className="font-serif text-2xl font-semibold tabular-nums">
+							<p className="text-2xl font-semibold tabular-nums">
 								{formatPeso(value as number)}
 							</p>
 						</CardContent>
@@ -67,9 +67,7 @@ function PayslipsPage() {
 
 			<Card>
 				<CardHeader>
-					<CardTitle className="font-serif text-base">
-						Finalized payslips
-					</CardTitle>
+					<CardTitle className="text-base">Finalized payslips</CardTitle>
 				</CardHeader>
 				<CardContent>
 					{data.items.length === 0 ? (

@@ -34,8 +34,10 @@ function LandingPage() {
 	return (
 		<div className="page-wrap py-16 md:py-24">
 			<section className="rise-in max-w-2xl">
-				<p className="island-kicker">Personal work tracker</p>
-				<h1 className="display-title mt-3 text-balance text-4xl font-bold tracking-tight md:text-5xl">
+				<p className="text-sm font-medium text-muted-foreground">
+					Personal work tracker
+				</p>
+				<h1 className="mt-3 text-balance text-4xl font-bold tracking-tight md:text-5xl">
 					Keep your own time record, and know exactly what you earned.
 				</h1>
 				<p className="mt-5 text-lg text-muted-foreground">
@@ -56,14 +58,9 @@ function LandingPage() {
 
 			<section className="mt-16 grid gap-4 md:grid-cols-3">
 				{FEATURES.map((feature) => (
-					<div
-						key={feature.title}
-						className="island-shell feature-card rounded-xl p-5"
-					>
+					<div key={feature.title} className="rounded-xl border bg-card p-5">
 						<feature.icon className="size-5 text-primary" />
-						<h2 className="mt-3 font-serif text-lg font-semibold">
-							{feature.title}
-						</h2>
+						<h2 className="mt-3 text-lg font-semibold">{feature.title}</h2>
 						<p className="mt-2 text-sm text-muted-foreground">{feature.body}</p>
 					</div>
 				))}

@@ -113,7 +113,7 @@ function DashboardPage() {
 			    is forgetting to fill days in, and this catches it before payroll. */}
 			<Card className="mb-6">
 				<CardHeader>
-					<CardTitle className="flex items-center gap-2 font-serif text-base">
+					<CardTitle className="flex items-center gap-2 text-base">
 						Needs attention
 						{critical.length > 0 ? (
 							<Badge variant="destructive">{critical.length}</Badge>
@@ -320,7 +320,7 @@ function DashboardPage() {
 
 			<Card className="mt-4">
 				<CardHeader>
-					<CardTitle className="font-serif text-base">Leave balances</CardTitle>
+					<CardTitle className="text-base">Leave balances</CardTitle>
 				</CardHeader>
 				<CardContent>
 					{data.leaveBalances.length === 0 ? (
@@ -338,7 +338,7 @@ function DashboardPage() {
 										<span className="text-sm">{balance.name}</span>
 										<Badge variant="outline">{balance.code}</Badge>
 									</div>
-									<p className="mt-1 font-serif text-xl font-semibold tabular-nums">
+									<p className="mt-1 text-xl font-semibold tabular-nums">
 										{balance.balanceDays}
 										<span className="ml-1 text-sm font-normal text-muted-foreground">
 											of {balance.earnedDays} days
@@ -383,9 +383,7 @@ function Kpi({
 				</CardTitle>
 			</CardHeader>
 			<CardContent>
-				<p className="font-serif text-2xl font-semibold tabular-nums">
-					{value}
-				</p>
+				<p className="text-2xl font-semibold tabular-nums">{value}</p>
 				{showDelta ? (
 					<p className={`mt-1 flex items-center gap-1 text-xs ${tone}`}>
 						{isUp ? (
@@ -417,7 +415,7 @@ function Panel({
 	return (
 		<Card>
 			<CardHeader>
-				<CardTitle className="font-serif text-base">{title}</CardTitle>
+				<CardTitle className="text-base">{title}</CardTitle>
 				<CardDescription>{description}</CardDescription>
 			</CardHeader>
 			<CardContent>

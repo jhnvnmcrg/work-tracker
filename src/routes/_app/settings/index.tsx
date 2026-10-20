@@ -168,7 +168,7 @@ function SettingsPage() {
 			<div className="grid gap-4 lg:grid-cols-2">
 				<Card>
 					<CardHeader>
-						<CardTitle className="font-serif text-base">Pay</CardTitle>
+						<CardTitle className="text-base">Pay</CardTitle>
 						<CardDescription>
 							Base pay is half the monthly rate on each cutoff, regardless of
 							cutoff length.
@@ -238,7 +238,7 @@ function SettingsPage() {
 
 				<Card>
 					<CardHeader>
-						<CardTitle className="font-serif text-base">Schedule</CardTitle>
+						<CardTitle className="text-base">Schedule</CardTitle>
 						<CardDescription>
 							Rest days are never charged against leave and never counted as
 							absence.
@@ -321,9 +321,7 @@ function SettingsPage() {
 
 				<Card className="lg:col-span-2">
 					<CardHeader>
-						<CardTitle className="font-serif text-base">
-							Statutory deductions
-						</CardTitle>
+						<CardTitle className="text-base">Statutory deductions</CardTitle>
 						<CardDescription>
 							Which cutoff each monthly contribution is withheld on. Withholding
 							tax is always computed per cutoff.

@@ -28,7 +28,7 @@ export function ComingSoon({
 					<Construction className="size-4" />
 					<CardDescription>{phase}</CardDescription>
 				</div>
-				<CardTitle className="font-serif text-lg">{feature}</CardTitle>
+				<CardTitle className="text-lg">{feature}</CardTitle>
 			</CardHeader>
 			{children ? (
 				<CardContent className="text-sm text-muted-foreground">
